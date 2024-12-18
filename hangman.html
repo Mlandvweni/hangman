@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        #word {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        #letters {
+            margin-top: 20px;
+        }
+        .letter {
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            background-color: #eee;
+            cursor: pointer;
+            font-size: 20px;
+            width: 40px;
+            text-align: center;
+        }
+        .letter.disabled {
+            background-color: #ddd;
+            pointer-events: none;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hangman Game</h1>
+    <canvas id="hangmanCanvas" width="300" height="400"></canvas>
+    <div id="word"></div>
+    <div id="letters"></div>
+    <div id="result"></div>
+    <script>
+        // Predefined word
+        const word = "PROGRAMMING".toUpperCase();
+        let guessedWord = Array(word.length).fill("_");
+        let wrongGuesses = 0;
+        const maxWrongGuesses = 6;
+
+        // Setup the canvas
+        const canvas = document.getElementById("hangmanCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Draw hangman stages
+        function drawHangman(stage) {
+            switch (stage) {
+                case 1: // Base
+                    ctx.beginPath();
+                    ctx.moveTo(50, 350);
+                    ctx.lineTo(250, 350);
+                    ctx.stroke();
+                    break;
+                case 2: // Pole
+                    ctx.beginPath();
+                    ctx.moveTo(100, 350);
+                    ctx.lineTo(100, 50);
+                    ctx.stroke();
+                    break;
+                case 3: // Beam
+                    ctx.beginPath();
+                    ctx.moveTo(100, 50);
+                    ctx.lineTo(200, 50);
+                    ctx.stroke();
+                    break;
+                case 4: // Rope
+                    ctx.beginPath();
+                    ctx.moveTo(200, 50);
+                    ctx.lineTo(200, 100);
+                    ctx.stroke();
+                    break;
+                case 5: // Head
+                    ctx.beginPath();
+                    ctx.arc(200, 130, 30, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+                case 6: // Body
+                    ctx.beginPath();
+                    ctx.moveTo(200, 160);
+                    ctx.lineTo(200, 250);
+                    ctx.stroke();
+                    break;
+                case 7: // Arms and Legs
+                    ctx.beginPath();
+                    ctx.moveTo(200, 180); // Left Arm
+                    ctx.lineTo(160, 220);
+                    ctx.moveTo(200, 180); // Right Arm
+                    ctx.lineTo(240, 220);
+                    ctx.moveTo(200, 250); // Left Leg
+                    ctx.lineTo(160, 300);
+                    ctx.moveTo(200, 250); // Right Leg
+                    ctx.lineTo(240, 300);
+                    ctx.stroke();
+                    break;
+            }
+        }
+
+        // Display the guessed word
+        function updateWordDisplay() {
+            const wordDisplay = document.getElementById("word");
+            wordDisplay.textContent = guessedWord.join(" ");
+        }
+
+        // Display the letter buttons
+        function setupLetters() {
+            const lettersDiv = document.getElementById("letters");
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            alphabet.split("").forEach(letter => {
+                const letterDiv = document.createElement("div");
+                letterDiv.className = "letter";
+                letterDiv.textContent = letter;
+                letterDiv.addEventListener("click", () => guessLetter(letter, letterDiv));
+                lettersDiv.appendChild(letterDiv);
+            });
+        }
+
+        // Handle letter guesses
+        function guessLetter(letter, button) {
+            button.classList.add("disabled");
+            button.removeEventListener("click", () => {});
+
+            if (word.includes(letter)) {
+                // Correct guess
+                for (let i = 0; i < word.length; i++) {
+                    if (word[i] === letter) {
+                        guessedWord[i] = letter;
+                    }
+                }
+                updateWordDisplay();
+                if (!guessedWord.includes("_")) {
+                    document.getElementById("result").textContent = "You Win!";
+                }
+            } else {
+                // Wrong guess
+                wrongGuesses++;
+                drawHangman(wrongGuesses);
+                if (wrongGuesses >= maxWrongGuesses) {
+                    document.getElementById("result").textContent = `You Lose! The word was ${word}`;
+                    document.getElementById("letters").innerHTML = ""; // Disable further guesses
+                }
+            }
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            updateWordDisplay();
+            setupLetters();
+        }
+
+        initializeGame();
+    </script>
+</body>
+</html>
